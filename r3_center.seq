@@ -1,0 +1,92 @@
+! r3 ring sequence with refer = center for use of makethin command etc.
+! G.Hudson-Chang June 2024
+
+! ===== parameters =====
+full_gap = 0.08; ! Full width pole to pole gap [m]
+b_angle = 15*raddeg; ! Bending angle [rad.]
+b_rad_tarnd = 4.045; ! Bending radius of TARNII-D [m]
+
+! ===== lengths =====
+l_dp = b_rad_tarnd*b_angle; ! length of dipole
+l_dp_drft = 0.6; ! drift section between R3 dipoles
+
+l_str = 4.022544566; ! straight section
+l_str_hf = 2.011272283; ! half straight section
+
+l_r3_bend = 4*l_dp+3*l_dp_drft; ! length of r3_bend section
+l_r3_bend_hf = l_r3_bend/2; ! length of r3_bend section
+l_ring = 6*l_r3_bend+6*l_str;
+
+! ===== dipole magnets =====
+! ring dipole with trim coil
+dp_trim: sbend, 
+        l = l_dp,
+        angle = b_angle,
+        hgap = full_gap/2,
+        ! tilt = 0.0*raddeg,
+        e1 = 7.5*pi/180,
+        e2 = 7.5*pi/180,
+        fint = 0.654, ! fint is same as old tarnii-file
+        k1 = 0.0739951, ! tilted magnetic field (first order)
+        k2 = 0.0; !k2=0.02616 by cosy
+
+! ring dipole with no trim coil                 
+dp_notrim:  sbend,
+        l = l_dp,
+        angle = b_angle,
+        hgap = full_gap/2,
+        ! tilt = 0.0*raddeg,
+        e1 = 7.5*pi/180,
+        e2 = 7.5*pi/180,
+        fint = 0.654, ! fint is same as old tarnii-file
+        k1 = 0.0,
+        k2 = 0.0;
+
+! beam position monitors
+bpm_schottky: monitor, l=0; ! default l = 0
+
+! markers for midpoint of straight sections
+m1: marker;
+m2: marker;
+m3: marker;
+m4: marker;
+m5: marker;
+
+! r3 bending magnet sequence
+r3_bend: sequence, refer = center, l = l_r3_bend;
+        bm1: dp_trim, at = l_dp/2;
+        bm2: dp_notrim, at = 3*l_dp/2+l_dp_drft;
+        bm3: dp_notrim, at = 5*l_dp/2+2*l_dp_drft;
+        bm4: dp_trim, at = 7*l_dp/2+3*l_dp_drft;
+endsequence;
+
+! main ring sequence
+! beginning is arbitrary - using start after SD12 next to injection
+full_ring: sequence, refer = center, l = n_turns*l_ring;
+        ! beginning is arbitrary; starting after SD12 next to injection
+        ! six sections, each separated by a straight section
+
+        ! while loop for multiple turns
+        n = 1;
+        while (n < n_turns+1) {
+        r3_bend, at = l_r3_bend_hf + (n-1)*l_ring;
+        bpm_schottky, at = (n-1)*l_ring + l_r3_bend + l_str_hf; ! bpm at straight section for position schottky
+        
+        r3_bend, at = (n-1)*l_ring + 3*l_r3_bend_hf + l_str;
+        m1, at = (n-1)*l_ring + 4*l_r3_bend_hf + l_str + l_str_hf; ! marker in centre of straight section
+        
+        r3_bend, at = (n-1)*l_ring + 5*l_r3_bend_hf + 2*l_str;
+        m2, at = (n-1)*l_ring + 6*l_r3_bend_hf + 2*l_str + l_str_hf;
+       
+        r3_bend, at = (n-1)*l_ring + 7*l_r3_bend_hf + 3*l_str;
+        m3, at = (n-1)*l_ring + 8*l_r3_bend_hf + 3*l_str + l_str_hf;
+       
+        r3_bend, at = (n-1)*l_ring + 9*l_r3_bend_hf + 4*l_str;
+        m4, at = (n-1)*l_ring + 10*l_r3_bend_hf + 4*l_str + l_str_hf;
+
+        r3_bend, at = (n-1)*l_ring + 11*l_r3_bend_hf + 5*l_str;
+        m5, at = (n-1)*l_ring + 12*l_r3_bend_hf + 5*l_str + l_str_hf;
+
+        n = n + 1;
+        }
+endsequence;
