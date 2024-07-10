@@ -27,6 +27,7 @@ dp_trim: sbend,
         e1 = 7.5*pi/180,
         e2 = 7.5*pi/180,
         fint = 0.654, ! fint is same as old tarnii-file
+        ktap = dp_modifier,
         k1 = 0.0739951, ! tilted magnetic field (first order)
         k2 = 0.0; !k2=0.02616 by cosy
 
@@ -39,6 +40,7 @@ dp_notrim:  sbend,
         e1 = 7.5*pi/180,
         e2 = 7.5*pi/180,
         fint = 0.654, ! fint is same as old tarnii-file
+        ktap = dp_modifier,
         k1 = 0.0,
         k2 = 0.0;
 
